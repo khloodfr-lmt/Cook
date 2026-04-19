@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>تطبيق الوصفات v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAF8F3;--green:#3D7A5E;--green-light:#E8F5EE;--green-btn:#4CAF78;
+  --red:#D94F3D;--red-light:#FDF0EE;--amber:#C97D2E;--amber-light:#FFF8E7;
+  --blue:#2563EB;--blue-light:#EFF6FF;
+  --text:#1A1A1A;--text-muted:#8A8A8A;--border:#EBEBEB;
+  --card-bg:#FFFFFF;--nav-bg:#FFFFFF;--input-bg:#FFFFFF;--status-bg:#FAF8F3;
+  --shadow:0 2px 14px rgba(0,0,0,.07);--tr:all .32s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="dark"]{
+  --cream:#0F1117;--green:#56C489;--green-light:#1A2E24;--green-btn:#3DAA6A;
+  --red:#E86B5A;--red-light:#2E1A18;--amber:#D4903A;--amber-light:#2A2010;
+  --blue:#60A5FA;--blue-light:#1E2A45;
+  --text:#F0EDE8;--text-muted:#6B7080;--border:#2A2D38;
+  --card-bg:#1A1D26;--nav-bg:#13151E;--input-bg:#1E2130;--status-bg:#0F1117;
+  --shadow:0 2px 14px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:#C8C5BC;display:flex;
+  align-items:center;justify-content:center;min-height:100vh;padding:20px;transition:background .35s;}
+[data-theme="dark"] body{background:#12121F;}
+html[lang="en"] body,html[lang="en"] input,html[lang="en"] button{font-family:'DM Sans',sans-serif;}
+
+/* PHONE */
+.phone{width:390px;height:844px;background:var(–cream);border-radius:50px;
+box-shadow:0 40px 100px rgba(0,0,0,.3),0 0 0 10px #111,0 0 0 12px #2A2A2A;
+overflow:hidden;display:flex;flex-direction:column;transition:var(–tr);}
+
+/* STATUS */
+.sbar{background:var(–status-bg);padding:13px 18px 7px;display:flex;
+justify-content:space-between;align-items:center;font-size:11px;font-weight:700;
+color:var(–text);flex-shrink:0;transition:var(–tr);}
+.ctrl-row{display:flex;gap:5px;}
+.cbtn{background:var(–card-bg);border:1.5px solid var(–border);border-radius:20px;
+padding:3px 9px;font-size:11px;font-weight:700;color:var(–text);cursor:pointer;
+transition:var(–tr);font-family:inherit;}
+.cbtn:active{transform:scale(.93);}
+
+/* DOTS */
+.dots{display:flex;justify-content:center;gap:6px;padding:5px 0 3px;
+flex-shrink:0;background:var(–status-bg);transition:var(–tr);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(–border);transition:all .35s;}
+.dot.on{background:var(–green);width:22px;border-radius:3px;}
+
+/* SCREEN */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;
+background:var(–cream);transition:var(–tr);}
+.screen.active{display:flex;animation:sIn .28s ease;}
+@keyframes sIn{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:translateX(0);}}
+html[dir=“rtl”] .screen.active{animation:sInR .28s ease;}
+@keyframes sInR{from{opacity:0;transform:translateX(-14px);}to{opacity:1;transform:translateX(0);}}
+.scrl{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
+.scrl::-webkit-scrollbar{display:none;}
+
+/* SHARED */
+.hpad{padding:8px 20px 13px;background:var(–cream);transition:var(–tr);}
+.back-btn{display:flex;align-items:center;gap:5px;font-size:13px;color:var(–green);
+font-weight:700;cursor:pointer;margin-bottom:8px;transition:var(–tr);}
+html[dir=“rtl”] .back-btn{flex-direction:row-reverse;justify-content:flex-end;}
+.page-title{font-size:21px;font-weight:800;color:var(–text);line-height:1.3;
+margin-bottom:3px;transition:var(–tr);}
+.page-sub{font-size:12px;color:var(–text-muted);transition:var(–tr);}
+.sec-hd{padding:13px 20px 8px;display:flex;justify-content:space-between;align-items:center;}
+.sec-ttl{font-size:15px;font-weight:800;color:var(–text);transition:var(–tr);}
+.see-all{font-size:12px;color:var(–green);font-weight:700;cursor:pointer;}
+
+/* BOTTOM NAV */
+.bnav{background:var(–nav-bg);border-top:1px solid var(–border);
+display:flex;justify-content:space-around;padding:8px 0 14px;
+flex-shrink:0;box-shadow:0 -3px 14px rgba(0,0,0,.06);transition:var(–tr);}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;
+cursor:pointer;padding:3px 12px;}
+.ni-ico{font-size:20px;} .ni-lbl{font-size:10px;color:var(–text-muted);font-weight:600;transition:var(–tr);}
+.ni.on .ni-lbl{color:var(–green);font-weight:800;}
+.ni-dot{width:5px;height:5px;background:var(–green);border-radius:50%;display:none;}
+.ni.on .ni-dot{display:block;}
+
+/* ORDER BTN */
+.obtn{width:100%;background:linear-gradient(135deg,var(–green-btn),var(–green));
+color:#fff;border:none;border-radius:16px;padding:15px;font-size:15px;
+font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+box-shadow:0 6px 20px rgba(61,122,94,.3);transition:transform .15s;font-family:inherit;}
+.obtn:active{transform:scale(.97);}
+.bwrap{padding:10px 20px 20px;flex-shrink:0;background:var(–cream);transition:var(–tr);}
+
+/* SEARCH */
+.srch{background:var(–input-bg);border-radius:14px;padding:10px 14px;
+display:flex;align-items:center;gap:8px;border:1px solid var(–border);transition:var(–tr);}
+.srch input{border:none;background:none;font-family:inherit;font-size:13px;
+color:var(–text-muted);width:100%;outline:none;direction:inherit;}
+
+/* ── SCREEN 1 HOME ── */
+.greeting{font-size:13px;color:var(–text-muted);margin-bottom:3px;transition:var(–tr);}
+.hero-ttl{font-size:22px;font-weight:800;color:var(–text);line-height:1.3;
+margin-bottom:12px;transition:var(–tr);}
+.cats{padding:10px 20px 0;display:flex;gap:8px;}
+.cat{flex:1;border-radius:16px;padding:13px 5px;display:flex;flex-direction:column;
+align-items:center;gap:6px;cursor:pointer;box-shadow:var(–shadow);
+transition:transform .2s,var(–tr);}
+.cat:active{transform:scale(.93);}
+.cat.fast{background:var(–red-light);border:1.5px solid var(–red);}
+.cat.healthy{background:var(–green-light);border:1.5px solid var(–green);}
+.cat.pasta{background:var(–amber-light);border:1.5px solid var(–amber);}
+.cat.soup{background:var(–blue-light);border:1.5px solid var(–blue);}
+.cat-ico{font-size:32px;}
+.cat-lbl{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;}
+.cat.fast .cat-lbl{background:var(–red);color:#fff;}
+.cat.healthy .cat-lbl{background:var(–green);color:#fff;}
+.cat.pasta .cat-lbl{background:var(–amber);color:#fff;}
+.cat.soup .cat-lbl{background:var(–blue);color:#fff;}
+.cat-sub{font-size:10px;color:var(–text-muted);transition:var(–tr);}
+.rlist{padding:0 20px;display:flex;flex-direction:column;gap:9px;padding-bottom:14px;}
+.rcard{background:var(–card-bg);border-radius:15px;padding:11px;
+display:flex;align-items:center;gap:10px;border:1px solid var(–border);
+cursor:pointer;transition:transform .2s,var(–tr);}
+.rcard:active{transform:scale(.98);}
+html[dir=“rtl”] .rcard{flex-direction:row-reverse;}
+.rthumb{width:60px;height:60px;border-radius:12px;font-size:32px;
+display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rname{font-weight:800;font-size:13px;color:var(–text);margin-bottom:2px;transition:var(–tr);}
+.rmeta{font-size:11px;color:var(–text-muted);transition:var(–tr);}
+.rtag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;
+border-radius:20px;margin-top:4px;}
+
+/* ── SCREEN 2 LIST ── */
+.filter-row{display:flex;gap:7px;padding:0 20px 12px;overflow-x:auto;scrollbar-width:none;}
+html[dir=“rtl”] .filter-row{flex-direction:row-reverse;}
+.filter-row::-webkit-scrollbar{display:none;}
+.fpill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+white-space:nowrap;cursor:pointer;border:1.5px solid var(–border);
+color:var(–text-muted);background:var(–card-bg);transition:var(–tr);}
+.qlist{padding:0 20px;display:flex;flex-direction:column;gap:10px;padding-bottom:14px;}
+.qcard{background:var(–card-bg);border-radius:16px;overflow:hidden;
+display:flex;border:1px solid var(–border);cursor:pointer;
+transition:transform .2s,var(–tr);}
+.qcard:active{transform:scale(.97);}
+html[dir=“rtl”] .qcard{flex-direction:row-reverse;}
+.qthumb{width:88px;display:flex;align-items:center;justify-content:center;
+font-size:40px;flex-shrink:0;padding:14px 4px;}
+.qinfo{padding:12px;flex:1;display:flex;flex-direction:column;justify-content:center;}
+.qname{font-weight:800;font-size:14px;color:var(–text);margin-bottom:2px;transition:var(–tr);}
+.qmeta{font-size:11px;color:var(–text-muted);margin-bottom:6px;transition:var(–tr);}
+.qrow{display:flex;align-items:center;justify-content:space-between;}
+html[dir=“rtl”] .qrow{flex-direction:row-reverse;}
+.qtag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;}
+
+/* ── SCREEN 3 DETAIL ── */
+.hero-area{position:relative;height:200px;display:flex;align-items:center;
+justify-content:center;flex-shrink:0;transition:var(–tr);}
+.hero-emoji{font-size:96px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.16));}
+.hero-back{position:absolute;top:12px;background:rgba(255,255,255,.18);
+backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.3);border-radius:50%;
+width:33px;height:33px;display:flex;align-items:center;justify-content:center;
+cursor:pointer;font-size:17px;color:var(–text);transition:var(–tr);}
+html[dir=“rtl”] .hero-back{right:16px;}
+html[dir=“ltr”] .hero-back{left:16px;}
+[data-theme=“dark”] .hero-back{background:rgba(0,0,0,.35);}
+.hero-badge{position:absolute;top:12px;font-size:11px;font-weight:800;
+padding:4px 11px;border-radius:20px;color:#fff;}
+html[dir=“rtl”] .hero-badge{left:16px;}
+html[dir=“ltr”] .hero-badge{right:16px;}
+.det-body{padding:0 20px;}
+.det-tr{padding:13px 0 3px;display:flex;justify-content:space-between;align-items:flex-start;}
+html[dir=“rtl”] .det-tr{flex-direction:row-reverse;}
+.det-name{font-size:19px;font-weight:800;color:var(–text);line-height:1.25;transition:var(–tr);}
+.hbtn{font-size:19px;cursor:pointer;flex-shrink:0;}
+.det-meta{display:flex;gap:10px;padding:5px 0 10px;flex-wrap:wrap;}
+html[dir=“rtl”] .det-meta{flex-direction:row-reverse;}
+.mchip{font-size:12px;color:var(–text-muted);transition:var(–tr);}
+.srvbox{background:var(–card-bg);border-radius:15px;padding:12px 14px;
+display:flex;align-items:center;justify-content:space-between;
+border:1px solid var(–border);margin-bottom:11px;transition:var(–tr);}
+html[dir=“rtl”] .srvbox{flex-direction:row-reverse;}
+.srv-lbl{font-size:13px;font-weight:800;color:var(–text);transition:var(–tr);}
+.srv-sub{font-size:11px;color:var(–text-muted);margin-top:1px;transition:var(–tr);}
+.srv-ctrl{display:flex;align-items:center;gap:9px;}
+.sbtn{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;font-size:20px;
+display:flex;align-items:center;justify-content:center;transition:transform .15s,var(–tr);}
+.sbtn:active{transform:scale(.86);}
+.sbtn.m{background:var(–border);color:var(–text);}
+.sbtn.p{background:var(–green);color:#fff;}
+.scount{font-size:13px;font-weight:800;color:var(–text);min-width:76px;text-align:center;transition:var(–tr);}
+.ing-ttl{font-size:15px;font-weight:800;color:var(–text);margin-bottom:8px;transition:var(–tr);}
+.irow{display:flex;align-items:center;gap:9px;padding:9px 0;
+border-bottom:1px solid var(–border);cursor:pointer;transition:var(–tr);}
+html[dir=“rtl”] .irow{flex-direction:row-reverse;}
+.ichk{width:20px;height:20px;border-radius:6px;border:2px solid var(–border);
+display:flex;align-items:center;justify-content:center;font-size:11px;
+flex-shrink:0;transition:all .22s;}
+.ichk.on{background:var(–green);border-color:var(–green);color:#fff;}
+.iname{flex:1;font-size:13px;color:var(–text);transition:var(–tr);}
+.iname.x{text-decoration:line-through;color:var(–text-muted);}
+.iamt{font-size:11px;color:var(–text-muted);font-weight:700;transition:var(–tr);}
+/* country flag badge */
+.iflag{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;
+background:var(–border);color:var(–text-muted);white-space:nowrap;
+flex-shrink:0;transition:var(–tr);}
+
+/* ── DRINKS UPSELL ── */
+.drinks-section{margin-bottom:12px;}
+.drinks-ttl{font-size:15px;font-weight:800;color:var(–text);margin-bottom:8px;transition:var(–tr);}
+.drinks-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+html[dir=“rtl”] .drinks-row{flex-direction:row-reverse;}
+.drinks-row::-webkit-scrollbar{display:none;}
+.drink-card{background:var(–card-bg);border:2px solid var(–border);border-radius:14px;
+padding:10px 12px;display:flex;flex-direction:column;align-items:center;gap:5px;
+cursor:pointer;flex-shrink:0;min-width:72px;transition:all .22s;}
+.drink-card.sel{border-color:var(–green);background:var(–green-light);}
+.drink-card:active{transform:scale(.93);}
+.drink-ico{font-size:26px;}
+.drink-name{font-size:10px;font-weight:800;color:var(–text);text-align:center;transition:var(–tr);}
+.drink-price{font-size:10px;color:var(–green);font-weight:700;}
+
+/* ── SCREEN 4 COMPARE ── */
+.slist{display:flex;flex-direction:column;gap:8px;margin:0 20px 11px;}
+.scard{background:var(–card-bg);border-radius:15px;padding:12px;
+display:flex;align-items:center;gap:10px;border:2px solid var(–border);
+cursor:pointer;position:relative;overflow:hidden;transition:all .22s,var(–tr);}
+html[dir=“rtl”] .scard{flex-direction:row-reverse;}
+.scard.sel{border-color:var(–green);background:var(–green-light);}
+.scard.alt{opacity:.72;}
+.slogo{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+justify-content:center;font-size:19px;flex-shrink:0;color:#fff;}
+.slogo.danube{background:linear-gradient(135deg,#1B6CA8,#2196F3);}
+.slogo.altamimi{background:linear-gradient(135deg,#E67E22,#F39C12);}
+.slogo.carrefour{background:linear-gradient(135deg,#C0392B,#E74C3C);}
+.slogo.panda{background:linear-gradient(135deg,#27AE60,#2ECC71);}
+.slogo.lulu{background:linear-gradient(135deg,#8E44AD,#9B59B6);}
+.sinfo{flex:1;min-width:0;}
+.sname{font-weight:800;font-size:13px;color:var(–text);transition:var(–tr);}
+.sdet{font-size:11px;color:var(–text-muted);margin-top:1px;transition:var(–tr);}
+.sbadge{background:var(–green-light);color:var(–green);font-size:10px;
+font-weight:800;padding:2px 7px;border-radius:20px;margin-top:3px;display:inline-block;}
+.sprice{text-align:right;flex-shrink:0;}
+html[dir=“rtl”] .sprice{text-align:left;}
+.pmain{font-size:16px;font-weight:800;color:var(–text);transition:var(–tr);}
+.psub{font-size:10px;color:var(–text-muted);transition:var(–tr);}
+.schk{position:absolute;top:8px;width:18px;height:18px;background:var(–green);
+border-radius:50%;display:none;align-items:center;justify-content:center;
+color:#fff;font-size:10px;}
+html[dir=“rtl”] .schk{right:auto;left:8px;}
+html[dir=“ltr”] .schk{right:8px;}
+.scard.sel .schk{display:flex;}
+.cbox{background:var(–card-bg);border-radius:15px;padding:13px 15px;
+margin:0 20px 11px;border:1px solid var(–border);transition:var(–tr);}
+.crow{display:flex;justify-content:space-between;font-size:12px;
+color:var(–text-muted);padding:4px 0;transition:var(–tr);}
+html[dir=“rtl”] .crow{flex-direction:row-reverse;}
+.crow.tot{font-weight:800;color:var(–text);font-size:14px;
+border-top:1px solid var(–border);margin-top:6px;padding-top:8px;}
+
+/* ── SCREEN 5 — STORE ORDER DETAILS ── */
+#screen5-store{background:var(–cream);}
+.store-hero{height:120px;display:flex;align-items:center;justify-content:center;
+flex-shrink:0;gap:16px;padding:0 20px;}
+.store-hero-logo{width:72px;height:72px;border-radius:20px;display:flex;
+align-items:center;justify-content:center;font-size:32px;color:#fff;
+box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.store-hero-info{flex:1;}
+.store-hero-name{font-size:20px;font-weight:800;color:var(–text);transition:var(–tr);}
+.store-hero-detail{font-size:12px;color:var(–text-muted);margin-top:3px;transition:var(–tr);}
+.store-hero-badge{display:inline-block;background:var(–green-light);color:var(–green);
+font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:5px;}
+
+/* Order items list */
+.order-items{padding:0 20px;display:flex;flex-direction:column;gap:10px;padding-bottom:14px;}
+.oi-card{background:var(–card-bg);border-radius:16px;overflow:hidden;
+border:1px solid var(–border);transition:var(–tr);}
+.oi-header{display:flex;align-items:center;gap:10px;padding:13px 14px 11px;
+border-bottom:1px solid var(–border);}
+html[dir=“rtl”] .oi-header{flex-direction:row-reverse;}
+.oi-emoji{font-size:32px;flex-shrink:0;}
+.oi-title{font-weight:800;font-size:14px;color:var(–text);flex:1;transition:var(–tr);}
+.oi-qty{font-size:12px;color:var(–text-muted);font-weight:600;}
+.oi-total-price{font-size:16px;font-weight:800;color:var(–text);transition:var(–tr);}
+.oi-ing-list{padding:0;}
+.oi-ing-row{display:flex;align-items:center;gap:10px;padding:9px 14px;
+border-bottom:1px solid var(–border);transition:var(–tr);}
+html[dir=“rtl”] .oi-ing-row{flex-direction:row-reverse;}
+.oi-ing-row:last-child{border-bottom:none;}
+.oi-flag{font-size:18px;flex-shrink:0;}
+.oi-ing-name{flex:1;font-size:13px;color:var(–text);transition:var(–tr);}
+.oi-ing-origin{font-size:11px;color:var(–text-muted);font-weight:600;}
+.oi-ing-price{font-size:12px;font-weight:800;color:var(–text);
+background:var(–green-light);color:var(–green);padding:2px 8px;
+border-radius:20px;flex-shrink:0;}
+
+/* Drink item in order */
+.drink-order-row{display:flex;align-items:center;gap:10px;padding:11px 14px;
+background:var(–blue-light);border-top:1px solid var(–border);}
+html[dir=“rtl”] .drink-order-row{flex-direction:row-reverse;}
+.drink-order-ico{font-size:24px;}
+.drink-order-name{flex:1;font-size:13px;font-weight:800;color:var(–text);transition:var(–tr);}
+.drink-order-price{font-size:13px;font-weight:800;color:var(–blue);}
+
+/* Final total card */
+.final-total{background:var(–card-bg);border-radius:15px;padding:14px 16px;
+margin:0 20px 11px;border:1px solid var(–border);transition:var(–tr);}
+.ft-row{display:flex;justify-content:space-between;font-size:12px;
+color:var(–text-muted);padding:4px 0;transition:var(–tr);}
+html[dir=“rtl”] .ft-row{flex-direction:row-reverse;}
+.ft-row.tot{font-weight:800;color:var(–text);font-size:15px;
+border-top:1px solid var(–border);margin-top:7px;padding-top:9px;}
+
+/* ── SCREEN 6 CONFIRM ── */
+#screen6{align-items:center;justify-content:center;padding:20px;position:relative;}
+.cfetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.cfetti span{position:absolute;border-radius:2px;animation:cfall 2.5s ease-in forwards;}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0);opacity:1;}
+100%{transform:translateY(900px) rotate(720deg);opacity:0;}}
+.cwrap{display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;}
+.cring{width:130px;height:130px;border-radius:50%;background:var(–green-light);
+display:flex;align-items:center;justify-content:center;position:relative;
+margin-bottom:20px;animation:rPulse 2.2s ease-in-out infinite;}
+@keyframes rPulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,120,.25);}
+50%{box-shadow:0 0 0 24px rgba(76,175,120,0);}}
+.cemoji{font-size:60px;animation:popIn .6s cubic-bezier(.175,.885,.32,1.275) forwards;}
+@keyframes popIn{0%{transform:scale(0) rotate(-20deg);opacity:0;}
+70%{transform:scale(1.15) rotate(5deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+.cchk{position:absolute;bottom:-7px;right:-7px;width:38px;height:38px;
+background:var(–green);border-radius:50%;display:flex;align-items:center;
+justify-content:center;border:3px solid var(–cream);
+animation:popIn .5s .3s cubic-bezier(.175,.885,.32,1.275) both;}
+html[dir=“rtl”] .cchk{right:auto;left:-7px;}
+.cttl{font-size:23px;font-weight:800;color:var(–text);margin-bottom:6px;
+animation:fadeUp .5s .4s ease both;transition:var(–tr);}
+.csub{font-size:13px;color:var(–text-muted);line-height:1.6;
+animation:fadeUp .5s .55s ease both;transition:var(–tr);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.trkbox{background:var(–card-bg);border-radius:15px;padding:13px;width:100%;
+margin-top:16px;border:1px solid var(–border);
+animation:fadeUp .5s .7s ease both;transition:var(–tr);}
+.trklbl{font-size:10px;font-weight:800;color:var(–text-muted);text-transform:uppercase;
+letter-spacing:1px;margin-bottom:11px;transition:var(–tr);}
+.trksteps{display:flex;align-items:center;justify-content:space-between;position:relative;}
+.tstep{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.tico{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+justify-content:center;font-size:14px;position:relative;z-index:1;}
+.tstep.done .tico{background:var(–green);}
+.tstep.active .tico{background:var(–green-light);border:2px solid var(–green);animation:tPulse 1.6s ease infinite;}
+.tstep.wait .tico{background:var(–border);}
+@keyframes tPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+.tname{font-size:9px;font-weight:700;color:var(–text-muted);transition:var(–tr);}
+.tstep.done .tname,.tstep.active .tname{color:var(–green);}
+.tline{position:absolute;top:16px;left:12%;right:12%;height:2px;background:var(–border);z-index:0;}
+.tfill{height:100%;background:var(–green);width:0%;transition:width 1.2s ease;}
+.etatag{background:var(–green-light);color:var(–green);font-size:12px;font-weight:800;
+padding:8px 16px;border-radius:20px;margin-top:12px;
+animation:fadeUp .5s .9s ease both;display:inline-block;}
+.ordnum{font-size:11px;color:var(–text-muted);margin-top:7px;
+animation:fadeUp .5s 1s ease both;transition:var(–tr);}
+.homebtn{width:100%;margin-top:13px;background:var(–card-bg);border:1.5px solid var(–border);
+border-radius:14px;padding:12px;font-size:13px;font-weight:800;color:var(–text);
+cursor:pointer;animation:fadeUp .5s 1.1s ease both;transition:var(–tr);font-family:inherit;}
+.homebtn:active{transform:scale(.97);}
+</style>
+
+</head>
+<body>
+<div class="phone">
+
+<!-- STATUS -->
+
+<div class="sbar">
+  <span>9:41</span>
+  <div class="ctrl-row">
+    <button class="cbtn" onclick="toggleLang()" id="langBtn">EN</button>
+    <button class="cbtn" onclick="toggleDark()" id="darkBtn">🌙</button>
+  </div>
+  <span style="font-size:11px;letter-spacing:1px;">●●● 🔋</span>
+</div>
+<div class="dots">
+  <div class="dot on" id="d0"></div>
+  <div class="dot"    id="d1"></div>
+  <div class="dot"    id="d2"></div>
+  <div class="dot"    id="d3"></div>
+  <div class="dot"    id="d4"></div>
+  <div class="dot"    id="d5"></div>
+</div>
+
+<!-- ════════ SCREEN 1 HOME ════════ -->
+
+<div class="screen active" id="screen1">
+  <div class="hpad">
+    <div class="greeting" id="s1g">صباح الخير 🌿</div>
+    <div class="hero-ttl" id="s1t">ماذا تريد أن تطبخ اليوم؟</div>
+    <div class="srch"><span style="font-size:14px;color:var(--text-muted);">🔍</span>
+      <input id="searchInput" placeholder="ابحث عن وصفة..." readonly></div>
+  </div>
+  <div class="scrl">
+    <div class="cats">
+      <div class="cat fast"    onclick="openCat('fast')"><span class="cat-ico">🍔</span><span class="cat-lbl" id="cl-fast">سريع</span><span class="cat-sub" id="cs-fast">١٢ وصفة</span></div>
+      <div class="cat healthy" onclick="openCat('healthy')"><span class="cat-ico">🥗</span><span class="cat-lbl" id="cl-healthy">صحي</span><span class="cat-sub" id="cs-healthy">٢٤ وصفة</span></div>
+      <div class="cat pasta"   onclick="openCat('pasta')"><span class="cat-ico">🍝</span><span class="cat-lbl" id="cl-pasta">باستا</span><span class="cat-sub" id="cs-pasta">٨ وصفات</span></div>
+      <div class="cat soup"    onclick="openCat('soup')"><span class="cat-ico">🍲</span><span class="cat-lbl" id="cl-soup">حساء</span><span class="cat-sub" id="cs-soup">٦ وصفات</span></div>
+    </div>
+    <div class="sec-hd">
+      <span class="sec-ttl" id="s1-sug">مقترح لك</span>
+      <span class="see-all" onclick="openCat('all')" id="s1-all">عرض الكل ←</span>
+    </div>
+    <div class="rlist" id="home-recs"></div>
+  </div>
+  <div class="bnav">
+    <div class="ni on"><span class="ni-ico">🏠</span><div class="ni-dot"></div><span class="ni-lbl" id="n1h">الرئيسية</span></div>
+    <div class="ni" onclick="openCat('all')"><span class="ni-ico">🔍</span><div class="ni-dot"></div><span class="ni-lbl" id="n1e">استكشاف</span></div>
+    <div class="ni"><span class="ni-ico">♡</span><div class="ni-dot"></div><span class="ni-lbl" id="n1s">المحفوظات</span></div>
+    <div class="ni"><span class="ni-ico">👤</span><div class="ni-dot"></div><span class="ni-lbl" id="n1p">حسابي</span></div>
+  </div>
+</div>
+
+<!-- ════════ SCREEN 2 LIST ════════ -->
+
+<div class="screen" id="screen2">
+  <div class="hpad">
+    <div class="back-btn" onclick="goTo(1)"><span class="ba">→</span><span id="s2back">رجوع</span></div>
+    <div class="page-title" id="s2ttl">أكلات سريعة ⚡</div>
+    <div class="page-sub"   id="s2sub">تُحضَّر في أقل من ٢٠ دقيقة</div>
+  </div>
+  <div class="scrl">
+    <div class="filter-row" id="filter-row"></div>
+    <div class="qlist" id="recipe-list"></div>
+  </div>
+  <div class="bnav">
+    <div class="ni" onclick="goTo(1)"><span class="ni-ico">🏠</span><div class="ni-dot"></div><span class="ni-lbl" id="n2h">الرئيسية</span></div>
+    <div class="ni on"><span class="ni-ico">🔍</span><div class="ni-dot"></div><span class="ni-lbl" id="n2e">استكشاف</span></div>
+    <div class="ni"><span class="ni-ico">♡</span><div class="ni-dot"></div><span class="ni-lbl" id="n2s">المحفوظات</span></div>
+    <div class="ni"><span class="ni-ico">👤</span><div class="ni-dot"></div><span class="ni-lbl" id="n2p">حسابي</span></div>
+  </div>
+</div>
+
+<!-- ════════ SCREEN 3 DETAIL ════════ -->
+
+<div class="screen" id="screen3">
+  <div class="hero-area" id="det-hero">
+    <span class="hero-back" onclick="goTo(2)" id="det-bk">›</span>
+    <span class="hero-badge" id="det-badge">⚡ سريع</span>
+    <span class="hero-emoji" id="det-emoji">🍔</span>
+  </div>
+  <div class="scrl">
+    <div class="det-body">
+      <div class="det-tr">
+        <div class="det-name" id="det-name">برجر اللحم</div>
+        <span class="hbtn" onclick="this.textContent=this.textContent=='♡'?'❤️':'♡'">♡</span>
+      </div>
+      <div class="det-meta" id="det-meta"></div>
+      <div class="srvbox">
+        <div>
+          <div class="srv-lbl" id="srv-lbl">عدد الحصص</div>
+          <div class="srv-sub" id="srv-sub">اضبط الكمية</div>
+        </div>
+        <div class="srv-ctrl">
+          <button class="sbtn m" onclick="changeCount(-1)">−</button>
+          <div class="scount" id="countDisplay">٤</div>
+          <button class="sbtn p" onclick="changeCount(1)">+</button>
+        </div>
+      </div>
+      <div style="margin-bottom:11px;">
+        <div class="ing-ttl" id="ing-ttl">المكوّنات</div>
+        <div id="ing-list"></div>
+      </div>
+      <!-- DRINKS UPSELL -->
+      <div class="drinks-section">
+        <div class="drinks-ttl" id="drinks-ttl">أضف مشروبًا 🥤</div>
+        <div class="drinks-row" id="drinks-row"></div>
+      </div>
+      <div style="padding-bottom:12px;">
+        <button class="obtn" onclick="goTo(4)">
+          🛒 <span id="det-order-txt">قارن وأطلب</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="bnav">
+    <div class="ni" onclick="goTo(1)"><span class="ni-ico">🏠</span><div class="ni-dot"></div><span class="ni-lbl" id="n3h">الرئيسية</span></div>
+    <div class="ni on"><span class="ni-ico">📖</span><div class="ni-dot"></div><span class="ni-lbl" id="n3r">الوصفة</span></div>
+    <div class="ni"><span class="ni-ico">♡</span><div class="ni-dot"></div><span class="ni-lbl" id="n3s">المحفوظات</span></div>
+    <div class="ni"><span class="ni-ico">👤</span><div class="ni-dot"></div><span class="ni-lbl" id="n3p">حسابي</span></div>
+  </div>
+</div>
+
+<!-- ════════ SCREEN 4 COMPARE ════════ -->
+
+<div class="screen" id="screen4">
+  <div class="hpad">
+    <div class="back-btn" onclick="goTo(3)"><span class="ba">→</span><span id="s4back">العودة للوصفة</span></div>
+    <div class="page-title" id="s4ttl">قارن المتاجر 🛒</div>
+    <div class="page-sub"><span id="s4sub">أفضل سعر لـ </span><strong id="orderSum">٤ حصص</strong></div>
+  </div>
+  <div class="scrl">
+    <div class="slist">
+      <div class="scard sel" id="danube-card"    onclick="selectStore('danube')">   <div class="schk">✓</div><div class="slogo danube">🏪</div>   <div class="sinfo"><div class="sname" id="sn-danube">دانوب</div><div class="sdet" id="sd-danube">📍 ١٫٢ كم · 🛵 ٤٥ دقيقة</div><span class="sbadge" id="sbdg">✓ الأفضل سعراً</span></div><div class="sprice"><div class="pmain" id="danube-price">٣٦ ر.س</div><div class="psub" id="pp-danube">/ ٤ حصص</div></div></div>
+      <div class="scard alt" id="altamimi-card"  onclick="selectStore('altamimi')"> <div class="schk">✓</div><div class="slogo altamimi">🏬</div>  <div class="sinfo"><div class="sname" id="sn-altamimi">التميمي</div><div class="sdet" id="sd-altamimi">📍 ٢٫٥ كم · 🛵 ٦٠ دقيقة</div></div><div class="sprice"><div class="pmain" id="altamimi-price">٤٢ ر.س</div><div class="psub" id="pp-altamimi">/ ٤ حصص</div></div></div>
+      <div class="scard alt" id="carrefour-card" onclick="selectStore('carrefour')"><div class="schk">✓</div><div class="slogo carrefour">🏢</div> <div class="sinfo"><div class="sname" id="sn-carrefour">كارفور</div><div class="sdet" id="sd-carrefour">📍 ٣٫١ كم · 🛵 ٥٥ دقيقة</div></div><div class="sprice"><div class="pmain" id="carrefour-price">٣٩ ر.س</div><div class="psub" id="pp-carrefour">/ ٤ حصص</div></div></div>
+      <div class="scard alt" id="panda-card"     onclick="selectStore('panda')">    <div class="schk">✓</div><div class="slogo panda">🐼</div>     <div class="sinfo"><div class="sname" id="sn-panda">باندا</div><div class="sdet" id="sd-panda">📍 ٤٫٠ كم · 🛵 ٧٠ دقيقة</div></div><div class="sprice"><div class="pmain" id="panda-price">٤٥ ر.س</div><div class="psub" id="pp-panda">/ ٤ حصص</div></div></div>
+      <div class="scard alt" id="lulu-card"      onclick="selectStore('lulu')">     <div class="schk">✓</div><div class="slogo lulu">🌟</div>      <div class="sinfo"><div class="sname" id="sn-lulu">لولو</div><div class="sdet" id="sd-lulu">📍 ٥٫٢ كم · 🛵 ٨٠ دقيقة</div></div><div class="sprice"><div class="pmain" id="lulu-price">٤٨ ر.س</div><div class="psub" id="pp-lulu">/ ٤ حصص</div></div></div>
+    </div>
+    <div class="cbox">
+      <div style="font-weight:800;font-size:13px;margin-bottom:8px;color:var(--text);" id="cttl">🧾 ملخص الطلب</div>
+      <div class="crow"><span id="ci-lbl">× <span id="cart-count">٤</span></span><span id="cart-sub">٣٦ ر.س</span></div>
+      <div class="crow" id="drink-crow" style="display:none;"><span id="cd-lbl">🥤 مشروب</span><span id="cart-drink-price">٠ ر.س</span></div>
+      <div class="crow"><span id="cdel-lbl">🛵 توصيل</span><span id="cart-del">٨ ر.س</span></div>
+      <div class="crow"><span id="cdisc-lbl">💚 خصم</span><span style="color:var(--green);">- ٥ ر.س</span></div>
+      <div class="crow tot"><span id="ctot-lbl">الإجمالي</span><span id="cart-total">٣٩ ر.س</span></div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+  <div class="bwrap">
+    <button class="obtn" id="orderBtn" onclick="openStoreOrder()">
+      🏪 <span id="btnTxt">اطلب من دانوب · </span><span id="btnPrice">٣٩ ر.س</span>
+    </button>
+  </div>
+</div>
+
+<!-- ════════ SCREEN 5 STORE ORDER DETAILS ════════ -->
+
+<div class="screen" id="screen5-store">
+  <div class="hpad" style="padding-bottom:0;">
+    <div class="back-btn" onclick="goTo(4)"><span class="ba">→</span><span id="s5back">العودة للمقارنة</span></div>
+  </div>
+  <!-- Store hero -->
+  <div class="store-hero" id="s5-store-hero">
+    <div class="store-hero-logo danube" id="s5-store-logo">🏪</div>
+    <div class="store-hero-info">
+      <div class="store-hero-name" id="s5-store-name">دانوب</div>
+      <div class="store-hero-detail" id="s5-store-detail">📍 ١٫٢ كم · 🛵 ٤٥ دقيقة</div>
+      <span class="store-hero-badge" id="s5-store-badge">✓ الأفضل سعراً</span>
+    </div>
+  </div>
+
+  <div class="scrl">
+    <div class="sec-hd">
+      <span class="sec-ttl" id="s5-items-ttl">🛍️ تفاصيل طلبك</span>
+    </div>
+    <div class="order-items" id="order-items-list"></div>
+    <div class="final-total" id="final-total-box">
+      <div style="font-weight:800;font-size:13px;margin-bottom:8px;color:var(--text);" id="ftttl">🧾 الإجمالي النهائي</div>
+      <div class="ft-row"><span id="ft-sub-lbl">المواد الغذائية</span><span id="ft-sub">٣٦ ر.س</span></div>
+      <div class="ft-row" id="ft-drink-row" style="display:none;"><span id="ft-drink-lbl">المشروب</span><span id="ft-drink">٠ ر.س</span></div>
+      <div class="ft-row"><span id="ft-del-lbl">التوصيل</span><span id="ft-del">٨ ر.س</span></div>
+      <div class="ft-row"><span id="ft-disc-lbl">خصم</span><span style="color:var(--green);">- ٥ ر.س</span></div>
+      <div class="ft-row tot"><span id="ft-tot-lbl">الإجمالي</span><span id="ft-tot">٣٩ ر.س</span></div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+  <div class="bwrap">
+    <button class="obtn" onclick="placeOrder()">
+      ✅ <span id="s5-confirm-txt">تأكيد الطلب</span>
+    </button>
+  </div>
+</div>
+
+<!-- ════════ SCREEN 6 CONFIRM ════════ -->
+
+<div class="screen" id="screen6" style="position:relative;">
+  <div class="cfetti" id="confettiEl"></div>
+  <div class="scrl" style="display:flex;align-items:center;justify-content:center;">
+    <div class="cwrap">
+      <div class="cring">
+        <span class="cemoji" id="conf-emoji">🍔</span>
+        <div class="cchk"><svg width="15" height="12" viewBox="0 0 18 14" fill="none"><path d="M1.5 7L6.5 12L16.5 2" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>
+      <div class="cttl" id="cttl-txt">تم الطلب! 🎉</div>
+      <div class="csub"><span id="csub1">طلبك لـ </span><strong id="conf-count">٤ حصص</strong><span id="csub2"> في الطريق من </span><strong id="conf-store">دانوب</strong></div>
+      <div class="trkbox">
+        <div class="trklbl" id="trklbl">حالة التوصيل</div>
+        <div class="trksteps">
+          <div class="tline"><div class="tfill" id="tfill"></div></div>
+          <div class="tstep done"><div class="tico">✅</div><span class="tname" id="trk1">مؤكَّد</span></div>
+          <div class="tstep active"><div class="tico">👨‍🍳</div><span class="tname" id="trk2" style="color:var(--green);">يُحضَّر</span></div>
+          <div class="tstep wait"><div class="tico" style="color:var(--text-muted);">🛵</div><span class="tname" id="trk3">في الطريق</span></div>
+          <div class="tstep wait"><div class="tico" style="color:var(--text-muted);">🏠</div><span class="tname" id="trk4">وصل</span></div>
+        </div>
+      </div>
+      <div class="etatag" id="eta-tag">🕐 وقت التسليم: ٤٥ دقيقة</div>
+      <div class="ordnum"><span id="ord-pre">رقم الطلب #RCP-</span><span id="ordnum">4821</span> · <span id="conf-tot">٣٩ ر.س</span></div>
+      <button class="homebtn" onclick="goTo(1)" id="homebtn-txt">← العودة للرئيسية</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /phone -->
+<script>
+/* ══════════════ DATA ══════════════ */
+
+// Ingredient origin data
+const ORIGINS = {
+// key: [flagEmoji, countryAr, countryEn, pricePerUnit]
+‘قطعة اللحم المفروم’: [‘🇦🇺’,‘أستراليا’,‘Australia’, 4.5],
+‘Ground beef patty’:  [‘🇦🇺’,‘Australia’,‘Australia’, 4.5],
+‘خبز البرجر’:        [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.8],
+‘Burger buns’:        [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.8],
+‘شرائح جبن شيدر’:   [‘🇳🇿’,‘نيوزيلندا’,‘New Zealand’, 1.2],
+‘Cheddar slices’:     [‘🇳🇿’,‘New Zealand’,‘New Zealand’, 1.2],
+‘أوراق خس’:          [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.5],
+‘Lettuce leaves’:     [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.5],
+‘طماطم’:             [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.3],
+‘Tomato’:             [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.3],
+‘بصل أحمر’:          [‘🇪🇬’,‘مصر’,‘Egypt’, 0.2],
+‘Red onion’:          [‘🇪🇬’,‘Egypt’,‘Egypt’, 0.2],
+‘صوص خاص’:           [‘🇺🇸’,‘أمريكا’,‘USA’, 0.6],
+‘Special sauce’:      [‘🇺🇸’,‘USA’,‘USA’, 0.6],
+‘بطاطس’:             [‘🇳🇱’,‘هولندا’,‘Netherlands’, 1.0],
+‘Potatoes’:           [‘🇳🇱’,‘Netherlands’,‘Netherlands’, 1.0],
+‘زيت نباتي’:         [‘🇲🇾’,‘ماليزيا’,‘Malaysia’, 0.4],
+‘Vegetable oil’:      [‘🇲🇾’,‘Malaysia’,‘Malaysia’, 0.4],
+‘ملح’:               [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.1],
+‘Salt’:               [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.1],
+‘بهارات مشكلة’:      [‘🇮🇳’,‘الهند’,‘India’, 0.2],
+‘Mixed spices’:       [‘🇮🇳’,‘India’,‘India’, 0.2],
+‘خس روماني’:         [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.6],
+‘Romaine lettuce’:    [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.6],
+‘طماطم كرزية’:       [‘🇳🇱’,‘هولندا’,‘Netherlands’, 1.5],
+‘Cherry tomatoes’:    [‘🇳🇱’,‘Netherlands’,‘Netherlands’, 1.5],
+‘خيار’:              [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.4],
+‘Cucumber’:           [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.4],
+‘جزر’:               [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.3],
+‘Carrots’:            [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.3],
+‘زيت زيتون’:         [‘🇮🇹’,‘إيطاليا’,‘Italy’, 2.0],
+‘Olive oil’:          [‘🇮🇹’,‘Italy’,‘Italy’, 2.0],
+‘عصير ليمون’:        [‘🇪🇬’,‘مصر’,‘Egypt’, 0.3],
+‘Lemon juice’:        [‘🇪🇬’,‘Egypt’,‘Egypt’, 0.3],
+‘صدر دجاج’:          [‘🇧🇷’,‘البرازيل’,‘Brazil’, 5.5],
+‘Chicken breast’:     [‘🇧🇷’,‘Brazil’,‘Brazil’, 5.5],
+‘إكليل الجبل’:       [‘🇫🇷’,‘فرنسا’,‘France’, 0.8],
+‘Rosemary’:           [‘🇫🇷’,‘France’,‘France’, 0.8],
+‘ثوم’:               [‘🇨🇳’,‘الصين’,‘China’, 0.3],
+‘Garlic’:             [‘🇨🇳’,‘China’,‘China’, 0.3],
+‘ليمون’:             [‘🇪🇬’,‘مصر’,‘Egypt’, 0.4],
+‘Lemon’:              [‘🇪🇬’,‘Egypt’,‘Egypt’, 0.4],
+‘موز’:               [‘🇪🇨’,‘إكوادور’,‘Ecuador’, 0.5],
+‘Banana’:             [‘🇪🇨’,‘Ecuador’,‘Ecuador’, 0.5],
+‘فراولة’:            [‘🇲🇦’,‘المغرب’,‘Morocco’, 1.8],
+‘Strawberries’:       [‘🇲🇦’,‘Morocco’,‘Morocco’, 1.8],
+‘حليب اللوز’:        [‘🇺🇸’,‘أمريكا’,‘USA’, 1.5],
+‘Almond milk’:        [‘🇺🇸’,‘USA’,‘USA’, 1.5],
+‘عسل’:               [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 1.0],
+‘Honey’:              [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 1.0],
+‘سباغيتي’:           [‘🇮🇹’,‘إيطاليا’,‘Italy’, 1.2],
+‘Spaghetti’:          [‘🇮🇹’,‘Italy’,‘Italy’, 1.2],
+‘لحم مفروم’:         [‘🇦🇺’,‘أستراليا’,‘Australia’, 4.0],
+‘Ground beef’:        [‘🇦🇺’,‘Australia’,‘Australia’, 4.0],
+‘صلصة طماطم’:        [‘🇮🇹’,‘إيطاليا’,‘Italy’, 1.0],
+‘Tomato sauce’:       [‘🇮🇹’,‘Italy’,‘Italy’, 1.0],
+‘بصل’:               [‘🇪🇬’,‘مصر’,‘Egypt’, 0.2],
+‘Onion’:              [‘🇪🇬’,‘Egypt’,‘Egypt’, 0.2],
+‘جبن بارميزان’:      [‘🇮🇹’,‘إيطاليا’,‘Italy’, 3.0],
+‘Parmesan’:           [‘🇮🇹’,‘Italy’,‘Italy’, 3.0],
+‘فيتوتشيني’:         [‘🇮🇹’,‘إيطاليا’,‘Italy’, 1.3],
+‘Fettuccine’:         [‘🇮🇹’,‘Italy’,‘Italy’, 1.3],
+‘بانشيتا’:           [‘🇮🇹’,‘إيطاليا’,‘Italy’, 4.5],
+‘Pancetta’:           [‘🇮🇹’,‘Italy’,‘Italy’, 4.5],
+‘بيض’:               [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.6],
+‘Eggs’:               [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.6],
+‘جبن بيكورينو’:      [‘🇮🇹’,‘إيطاليا’,‘Italy’, 3.5],
+‘Pecorino cheese’:    [‘🇮🇹’,‘Italy’,‘Italy’, 3.5],
+‘فلفل أسود’:         [‘🇮🇳’,‘الهند’,‘India’, 0.3],
+‘Black pepper’:       [‘🇮🇳’,‘India’,‘India’, 0.3],
+‘بينيه’:             [‘🇮🇹’,‘إيطاليا’,‘Italy’, 1.1],
+‘Penne’:              [‘🇮🇹’,‘Italy’,‘Italy’, 1.1],
+‘ريحان طازج’:        [‘🇮🇹’,‘إيطاليا’,‘Italy’, 1.5],
+‘Fresh basil’:        [‘🇮🇹’,‘Italy’,‘Italy’, 1.5],
+‘صنوبر’:             [‘🇮🇷’,‘إيران’,‘Iran’, 6.0],
+‘Pine nuts’:          [‘🇮🇷’,‘Iran’,‘Iran’, 6.0],
+‘ريحان’:             [‘🇮🇹’,‘إيطاليا’,‘Italy’, 0.8],
+‘Basil’:              [‘🇮🇹’,‘Italy’,‘Italy’, 0.8],
+‘طماطم طازجة’:       [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.8],
+‘Fresh tomatoes’:     [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.8],
+‘كريمة’:             [‘🇩🇰’,‘الدنمارك’,‘Denmark’, 2.0],
+‘Cream’:              [‘🇩🇰’,‘Denmark’,‘Denmark’, 2.0],
+‘مرق خضروات’:        [‘🇸🇦’,‘السعودية’,‘Saudi Arabia’, 0.5],
+‘Vegetable broth’:    [‘🇸🇦’,‘Saudi Arabia’,‘Saudi Arabia’, 0.5],
+‘عدس أحمر’:          [‘🇹🇷’,‘تركيا’,‘Turkey’, 0.9],
+‘Red lentils’:        [‘🇹🇷’,‘Turkey’,‘Turkey’, 0.9],
+‘كمون’:              [‘🇮🇳’,‘الهند’,‘India’, 0.2],
+‘Cumin’:              [‘🇮🇳’,‘India’,‘India’, 0.2],
+};
+
+const DRINKS = [
+{id:‘none’,  emoji:‘🚫’, ar:‘بدون’,      en:‘None’,       price:0},
+{id:‘water’, emoji:‘💧’, ar:‘ماء’,        en:‘Water’,      price:2},
+{id:‘juice’, emoji:‘🧃’, ar:‘عصير’,       en:‘Juice’,      price:8},
+{id:‘cola’,  emoji:‘🥤’, ar:‘كولا’,       en:‘Cola’,       price:7},
+{id:‘lemon’, emoji:‘🍋’, ar:‘ليمونادا’,  en:‘Lemonade’,   price:9},
+{id:‘coffee’,emoji:‘☕’, ar:‘قهوة’,       en:‘Coffee’,     price:12},
+{id:‘tea’,   emoji:‘🍵’, ar:‘شاي’,        en:‘Tea’,        price:6},
+{id:‘milk’,  emoji:‘🥛’, ar:‘حليب’,      en:‘Milk’,       price:5},
+];
+
+const RECIPES = {
+burger:{cat:‘fast’,emoji:‘🍔’,nameAr:‘برجر اللحم اللذيذ’,nameEn:‘Delicious Beef Burger’,
+metaAr:‘⏱ ١٥ دقيقة · 🔥 ٥٢٠ سعرة · ⭐ 4.8’,metaEn:‘⏱ 15 min · 🔥 520 cal · ⭐ 4.8’,
+badgeAr:‘⚡ سريع’,badgeEn:‘⚡ Fast’,heroBg:‘linear-gradient(145deg,#FFF0EE,#FFE5DF)’,
+badgeColor:‘var(–red)’,srvLblAr:‘عدد البرجر’,srvLblEn:‘Number of Burgers’,unitAr:‘برجر’,unitEn:‘Burger’,
+ing:[{ar:‘قطعة اللحم المفروم’,en:‘Ground beef patty’,base:1,unitAr:’ قطع’,unitEn:’ pcs’},
+{ar:‘خبز البرجر’,en:‘Burger buns’,base:1,unitAr:’ حبات’,unitEn:’ pcs’},
+{ar:‘شرائح جبن شيدر’,en:‘Cheddar slices’,base:1,unitAr:’ شرائح’,unitEn:’ slices’},
+{ar:‘أوراق خس’,en:‘Lettuce leaves’,base:1,unitAr:’ أوراق’,unitEn:’ leaves’},
+{ar:‘طماطم’,en:‘Tomato’,base:0.5,unitAr:’ حبات’,unitEn:’ pcs’},
+{ar:‘بصل أحمر’,en:‘Red onion’,base:0.3,unitAr:’ حبات’,unitEn:’ pcs’},
+{ar:‘صوص خاص’,en:‘Special sauce’,base:20,unitAr:‘غ’,unitEn:‘g’}],priceBase:8.9},
+fries:{cat:‘fast’,emoji:‘🍟’,nameAr:‘بطاطس مقرمشة’,nameEn:‘Crispy Fries’,
+metaAr:‘⏱ ١٨ دقيقة · 🔥 ٣٨٠ سعرة · ⭐ 4.6’,metaEn:‘⏱ 18 min · 🔥 380 cal · ⭐ 4.6’,
+badgeAr:‘⚡ سريع’,badgeEn:‘⚡ Fast’,heroBg:‘linear-gradient(145deg,#FFF8E7,#FFF0C0)’,
+badgeColor:‘var(–red)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘بطاطس’,en:‘Potatoes’,base:200,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘زيت نباتي’,en:‘Vegetable oil’,base:50,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘ملح’,en:‘Salt’,base:1,unitAr:’ ملعقة’,unitEn:’ tsp’},
+{ar:‘بهارات مشكلة’,en:‘Mixed spices’,base:0.5,unitAr:’ ملعقة’,unitEn:’ tsp’}],priceBase:3.5},
+salad:{cat:‘healthy’,emoji:‘🥗’,nameAr:‘السلطة الخضراء’,nameEn:‘Green Salad’,
+metaAr:‘⏱ ١٠ دقائق · 🔥 ١٥٠ سعرة · ⭐ 4.9’,metaEn:‘⏱ 10 min · 🔥 150 cal · ⭐ 4.9’,
+badgeAr:‘💚 صحي’,badgeEn:‘💚 Healthy’,heroBg:‘linear-gradient(145deg,#E8F5EE,#D0F0DC)’,
+badgeColor:‘var(–green)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘خس روماني’,en:‘Romaine lettuce’,base:1,unitAr:’ رأس’,unitEn:’ head’},
+{ar:‘طماطم كرزية’,en:‘Cherry tomatoes’,base:100,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘خيار’,en:‘Cucumber’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘جزر’,en:‘Carrots’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘زيت زيتون’,en:‘Olive oil’,base:15,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘عصير ليمون’,en:‘Lemon juice’,base:10,unitAr:‘مل’,unitEn:‘ml’}],priceBase:4.2},
+grilled:{cat:‘healthy’,emoji:‘🍗’,nameAr:‘دجاج مشوي بالأعشاب’,nameEn:‘Herb Grilled Chicken’,
+metaAr:‘⏱ ٢٥ دقيقة · 🔥 ٢٨٠ سعرة · ⭐ 4.7’,metaEn:‘⏱ 25 min · 🔥 280 cal · ⭐ 4.7’,
+badgeAr:‘💚 صحي’,badgeEn:‘💚 Healthy’,heroBg:‘linear-gradient(145deg,#E8F5EE,#C5E8D5)’,
+badgeColor:‘var(–green)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘صدر دجاج’,en:‘Chicken breast’,base:200,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘إكليل الجبل’,en:‘Rosemary’,base:2,unitAr:’ غصن’,unitEn:’ sprigs’},
+{ar:‘ثوم’,en:‘Garlic’,base:3,unitAr:’ فصوص’,unitEn:’ cloves’},
+{ar:‘زيت زيتون’,en:‘Olive oil’,base:15,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘ليمون’,en:‘Lemon’,base:1,unitAr:’ حبة’,unitEn:’ pcs’}],priceBase:7.5},
+smoothie:{cat:‘healthy’,emoji:‘🥤’,nameAr:‘سموذي الفواكه’,nameEn:‘Fruit Smoothie’,
+metaAr:‘⏱ ٥ دقائق · 🔥 ١٨٠ سعرة · ⭐ 4.8’,metaEn:‘⏱ 5 min · 🔥 180 cal · ⭐ 4.8’,
+badgeAr:‘💚 صحي’,badgeEn:‘💚 Healthy’,heroBg:‘linear-gradient(145deg,#FFF0F8,#FFE0F0)’,
+badgeColor:‘var(–green)’,srvLblAr:‘عدد الكوبات’,srvLblEn:‘Cups’,unitAr:‘كوب’,unitEn:‘Cup’,
+ing:[{ar:‘موز’,en:‘Banana’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘فراولة’,en:‘Strawberries’,base:100,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘حليب اللوز’,en:‘Almond milk’,base:200,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘عسل’,en:‘Honey’,base:10,unitAr:‘غ’,unitEn:‘g’}],priceBase:3.0},
+spaghetti:{cat:‘pasta’,emoji:‘🍝’,nameAr:‘سباغيتي بولونيز’,nameEn:‘Spaghetti Bolognese’,
+metaAr:‘⏱ ٣٠ دقيقة · 🔥 ٦٥٠ سعرة · ⭐ 4.9’,metaEn:‘⏱ 30 min · 🔥 650 cal · ⭐ 4.9’,
+badgeAr:‘🍝 باستا’,badgeEn:‘🍝 Pasta’,heroBg:‘linear-gradient(145deg,#FFF8E7,#FFEDC5)’,
+badgeColor:‘var(–amber)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘سباغيتي’,en:‘Spaghetti’,base:100,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘لحم مفروم’,en:‘Ground beef’,base:150,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘صلصة طماطم’,en:‘Tomato sauce’,base:200,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘بصل’,en:‘Onion’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘ثوم’,en:‘Garlic’,base:3,unitAr:’ فصوص’,unitEn:’ cloves’},
+{ar:‘جبن بارميزان’,en:‘Parmesan’,base:30,unitAr:‘غ’,unitEn:‘g’}],priceBase:9.5},
+carbonara:{cat:‘pasta’,emoji:‘🫕’,nameAr:‘باستا كاربونارا’,nameEn:‘Pasta Carbonara’,
+metaAr:‘⏱ ٢٠ دقيقة · 🔥 ٧٢٠ سعرة · ⭐ 4.8’,metaEn:‘⏱ 20 min · 🔥 720 cal · ⭐ 4.8’,
+badgeAr:‘🍝 باستا’,badgeEn:‘🍝 Pasta’,heroBg:‘linear-gradient(145deg,#FFF5E0,#FFE8C0)’,
+badgeColor:‘var(–amber)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘فيتوتشيني’,en:‘Fettuccine’,base:100,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘بانشيتا’,en:‘Pancetta’,base:80,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘بيض’,en:‘Eggs’,base:2,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘جبن بيكورينو’,en:‘Pecorino cheese’,base:40,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘فلفل أسود’,en:‘Black pepper’,base:1,unitAr:’ ملعقة’,unitEn:’ tsp’}],priceBase:10.5},
+pesto:{cat:‘pasta’,emoji:‘🌿’,nameAr:‘باستا البيستو’,nameEn:‘Pesto Pasta’,
+metaAr:‘⏱ ١٥ دقيقة · 🔥 ٥٨٠ سعرة · ⭐ 4.7’,metaEn:‘⏱ 15 min · 🔥 580 cal · ⭐ 4.7’,
+badgeAr:‘🍝 باستا’,badgeEn:‘🍝 Pasta’,heroBg:‘linear-gradient(145deg,#E8F5EE,#D0F0C0)’,
+badgeColor:‘var(–amber)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘بينيه’,en:‘Penne’,base:100,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘ريحان طازج’,en:‘Fresh basil’,base:50,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘صنوبر’,en:‘Pine nuts’,base:30,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘زيت زيتون’,en:‘Olive oil’,base:50,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘جبن بارميزان’,en:‘Parmesan’,base:40,unitAr:‘غ’,unitEn:‘g’}],priceBase:8.0},
+tomato:{cat:‘soup’,emoji:‘🍅’,nameAr:‘حساء الطماطم’,nameEn:‘Tomato Soup’,
+metaAr:‘⏱ ٢٥ دقيقة · 🔥 ٢٢٠ سعرة · ⭐ 4.6’,metaEn:‘⏱ 25 min · 🔥 220 cal · ⭐ 4.6’,
+badgeAr:‘🍲 حساء’,badgeEn:‘🍲 Soup’,heroBg:‘linear-gradient(145deg,#FFF0EE,#FFE0DA)’,
+badgeColor:‘var(–blue)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘طماطم طازجة’,en:‘Fresh tomatoes’,base:300,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘كريمة’,en:‘Cream’,base:50,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘بصل’,en:‘Onion’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘مرق خضروات’,en:‘Vegetable broth’,base:300,unitAr:‘مل’,unitEn:‘ml’},
+{ar:‘ريحان’,en:‘Basil’,base:5,unitAr:‘غ’,unitEn:‘g’}],priceBase:5.0},
+lentil:{cat:‘soup’,emoji:‘🍲’,nameAr:‘شوربة العدس’,nameEn:‘Lentil Soup’,
+metaAr:‘⏱ ٣٥ دقيقة · 🔥 ٣١٠ سعرة · ⭐ 4.8’,metaEn:‘⏱ 35 min · 🔥 310 cal · ⭐ 4.8’,
+badgeAr:‘🍲 حساء’,badgeEn:‘🍲 Soup’,heroBg:‘linear-gradient(145deg,#FFF8E7,#FFF0C5)’,
+badgeColor:‘var(–blue)’,srvLblAr:‘عدد الحصص’,srvLblEn:‘Servings’,unitAr:‘حصة’,unitEn:‘Serving’,
+ing:[{ar:‘عدس أحمر’,en:‘Red lentils’,base:100,unitAr:‘غ’,unitEn:‘g’},
+{ar:‘بصل’,en:‘Onion’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘كمون’,en:‘Cumin’,base:1,unitAr:’ ملعقة’,unitEn:’ tsp’},
+{ar:‘ليمون’,en:‘Lemon’,base:1,unitAr:’ حبة’,unitEn:’ pcs’},
+{ar:‘زيت زيتون’,en:‘Olive oil’,base:15,unitAr:‘مل’,unitEn:‘ml’}],priceBase:4.0},
+};
+const CATS={
+fast:{nameAr:‘أكلات سريعة ⚡’,nameEn:‘Quick Bites ⚡’,subAr:‘تُحضَّر في أقل من ٢٠ دقيقة’,subEn:‘Ready in under 20 min’,color:‘var(–red)’,light:‘var(–red-light)’},
+healthy:{nameAr:‘الأكل الصحي 💚’,nameEn:‘Healthy Eats 💚’,subAr:‘طازج، خفيف، ومغذٍّ’,subEn:‘Fresh, light & nutritious’,color:‘var(–green)’,light:‘var(–green-light)’},
+pasta:{nameAr:‘الباستا 🍝’,nameEn:‘Pasta 🍝’,subAr:‘وصفات إيطالية أصيلة’,subEn:‘Authentic Italian recipes’,color:‘var(–amber)’,light:‘var(–amber-light)’},
+soup:{nameAr:‘الحساء 🍲’,nameEn:‘Soups 🍲’,subAr:‘دافئ، مريح، ولذيذ’,subEn:‘Warm, comforting & delicious’,color:‘var(–blue)’,light:‘var(–blue-light)’},
+all:{nameAr:‘كل الوصفات 🍽️’,nameEn:‘All Recipes 🍽️’,subAr:‘استكشف جميع الوصفات’,subEn:‘Explore all recipes’,color:‘var(–text)’,light:‘var(–border)’},
+};
+const STORES={
+danube:{per:1.0,del:8,nameAr:‘دانوب’,nameEn:‘Danube’,logoClass:‘danube’,logo:‘🏪’,detAr:‘📍 ١٫٢ كم · 🛵 ٤٥ دقيقة’,detEn:‘📍 1.2 km · 🛵 45 min’,btnAr:‘اطلب من دانوب’,btnEn:‘Order from Danube’},
+altamimi:{per:1.2,del:10,nameAr:‘التميمي’,nameEn:‘AlTamimi’,logoClass:‘altamimi’,logo:‘🏬’,detAr:‘📍 ٢٫٥ كم · 🛵 ٦٠ دقيقة’,detEn:‘📍 2.5 km · 🛵 60 min’,btnAr:‘اطلب من التميمي’,btnEn:‘Order from AlTamimi’},
+carrefour:{per:1.1,del:9,nameAr:‘كارفور’,nameEn:‘Carrefour’,logoClass:‘carrefour’,logo:‘🏢’,detAr:‘📍 ٣٫١ كم · 🛵 ٥٥ دقيقة’,detEn:‘📍 3.1 km · 🛵 55 min’,btnAr:‘اطلب من كارفور’,btnEn:‘Order from Carrefour’},
+panda:{per:1.3,del:12,nameAr:‘باندا’,nameEn:‘Panda’,logoClass:‘panda’,logo:‘🐼’,detAr:‘📍 ٤٫٠ كم · 🛵 ٧٠ دقيقة’,detEn:‘📍 4.0 km · 🛵 70 min’,btnAr:‘اطلب من باندا’,btnEn:‘Order from Panda’},
+lulu:{per:1.4,del:15,nameAr:‘لولو’,nameEn:‘LuLu’,logoClass:‘lulu’,logo:‘🌟’,detAr:‘📍 ٥٫٢ كم · 🛵 ٨٠ دقيقة’,detEn:‘📍 5.2 km · 🛵 80 min’,btnAr:‘اطلب من لولو’,btnEn:‘Order from LuLu’},
+};
+const HOME_PICKS=[‘burger’,‘salad’,‘spaghetti’,‘lentil’];
+
+/* ══════ STATE ══════ */
+let curScreen=1,isAr=true,isDark=false,curCat=‘fast’,curRec=‘burger’,servings=4,selStore=‘danube’,selDrink=‘none’;
+
+/* ══════ UTILS ══════ */
+function arN(n){return String(Math.round(n*10)/10).replace(/\d/g,d=>‘٠١٢٣٤٥٦٧٨٩’[d]);}
+function fmt(n){return isAr?arN(n)+’ ر.س’:’SAR ‘+n.toFixed(0);}
+function fmtSrv(n){const r=RECIPES[curRec];return isAr?arN(n)+’ ‘+(r.unitAr||‘حصة’):n+’ ’+(n===1?r.unitEn:(r.unitEn+‘s’));}
+
+/* ══════ NAV ══════ */
+function goTo(n){
+// map screen5-store = index 5
+const ids=[‘screen1’,‘screen2’,‘screen3’,‘screen4’,‘screen5-store’,‘screen6’];
+document.getElementById(ids[curScreen-1]).classList.remove(‘active’);
+curScreen=n;
+document.getElementById(ids[n-1]).classList.add(‘active’);
+for(let i=0;i<6;i++) document.getElementById(‘d’+i).classList.toggle(‘on’,i===n-1);
+if(n===4) updateCart();
+}
+
+/* ══════ DARK / LANG ══════ */
+function toggleDark(){
+isDark=!isDark;
+document.documentElement.setAttribute(‘data-theme’,isDark?‘dark’:’’);
+document.getElementById(‘darkBtn’).textContent=isDark?‘☀️’:‘🌙’;
+document.body.style.background=isDark?’#12121F’:’#C8C5BC’;
+}
+function toggleLang(){
+isAr=!isAr;
+const html=document.documentElement;
+html.lang=isAr?‘ar’:‘en’; html.dir=isAr?‘rtl’:‘ltr’;
+document.getElementById(‘langBtn’).textContent=isAr?‘EN’:‘ع’;
+document.getElementById(‘s1g’).textContent=isAr?‘صباح الخير 🌿’:‘Good morning 🌿’;
+document.getElementById(‘s1t’).textContent=isAr?‘ماذا تريد أن تطبخ اليوم؟’:‘What would you like to cook?’;
+document.getElementById(‘searchInput’).placeholder=isAr?‘ابحث عن وصفة…’:‘Search recipes…’;
+document.getElementById(‘s1-sug’).textContent=isAr?‘مقترح لك’:‘Suggested for you’;
+document.getElementById(‘s1-all’).textContent=isAr?‘عرض الكل ←’:‘See all →’;
+[‘cl-fast’,‘cl-healthy’,‘cl-pasta’,‘cl-soup’].forEach((id,i)=>{
+const lbls=[[‘سريع’,‘Fast’],[‘صحي’,‘Healthy’],[‘باستا’,‘Pasta’],[‘حساء’,‘Soup’]];
+document.getElementById(id).textContent=isAr?lbls[i][0]:lbls[i][1];
+});
+[‘cs-fast’,‘cs-healthy’,‘cs-pasta’,‘cs-soup’].forEach((id,i)=>{
+const subs=[[‘١٢ وصفة’,‘12 recipes’],[‘٢٤ وصفة’,‘24 recipes’],[‘٨ وصفات’,‘8 recipes’],[‘٦ وصفات’,‘6 recipes’]];
+document.getElementById(id).textContent=isAr?subs[i][0]:subs[i][1];
+});
+document.querySelectorAll(’.ba’).forEach(a=>a.textContent=isAr?‘→’:‘←’);
+[‘n1h’,‘n2h’,‘n3h’].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=isAr?‘الرئيسية’:‘Home’;});
+[‘n1e’,‘n2e’].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=isAr?‘استكشاف’:‘Explore’;});
+[‘n1s’,‘n2s’,‘n3s’].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=isAr?‘المحفوظات’:‘Saved’;});
+[‘n1p’,‘n2p’,‘n3p’].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=isAr?‘حسابي’:‘Profile’;});
+if(document.getElementById(‘n3r’)) document.getElementById(‘n3r’).textContent=isAr?‘الوصفة’:‘Recipe’;
+buildHomeRecs();
+if(curScreen===2) openCat(curCat);
+if(curScreen===3) openRecipe(curRec);
+if(curScreen===4) updateCart();
+}
+
+/* ══════ HOME ══════ */
+function buildHomeRecs(){
+const c=document.getElementById(‘home-recs’); c.innerHTML=’’;
+const bgs={‘fast’:‘var(–red-light)’,‘healthy’:‘var(–green-light)’,‘pasta’:‘var(–amber-light)’,‘soup’:‘var(–blue-light)’};
+HOME_PICKS.forEach(key=>{
+const r=RECIPES[key],cm=CATS[r.cat],d=document.createElement(‘div’);
+d.className=‘rcard’; d.onclick=()=>openRecipe(key);
+d.innerHTML=`<div class="rthumb" style="background:${bgs[r.cat]}">${r.emoji}</div> <div style="flex:1;"><div class="rname">${isAr?r.nameAr:r.nameEn}</div> <div class="rmeta">${(isAr?r.metaAr:r.metaEn).split('·')[0].trim()}</div> <span class="rtag" style="background:${cm.light};color:${cm.color};">${isAr?cm.nameAr.replace(/ .*/,''):cm.nameEn.replace(/ .*/,'')}</span></div> <span style="font-size:17px;color:var(--border);">‹</span>`;
+c.appendChild(d);
+});
+}
+
+/* ══════ CATEGORY ══════ */
+function openCat(cat){
+curCat=cat;
+const m=CATS[cat]||CATS.all;
+document.getElementById(‘s2ttl’).textContent=isAr?m.nameAr:m.nameEn;
+document.getElementById(‘s2sub’).textContent=isAr?m.subAr:m.subEn;
+document.getElementById(‘s2back’).textContent=isAr?‘رجوع’:‘Back’;
+const fr=document.getElementById(‘filter-row’); fr.innerHTML=’’;
+const ap=document.createElement(‘span’);
+ap.className=‘fpill’; ap.style.cssText=`background:${m.color};color:#fff;border-color:${m.color};`;
+ap.textContent=isAr?‘الكل’:‘All’; fr.appendChild(ap);
+renderList(cat);
+goTo(2);
+}
+function renderList(cat){
+const l=document.getElementById(‘recipe-list’); l.innerHTML=’’;
+const bgs=[‘var(–red-light)’,‘var(–green-light)’,‘var(–amber-light)’,‘var(–blue-light)’,‘var(–border)’];
+Object.entries(RECIPES).filter(([,r])=>cat===‘all’||r.cat===cat).forEach(([key,r],i)=>{
+const cm=CATS[r.cat],d=document.createElement(‘div’);
+d.className=‘qcard’; d.style.animation=`sIn .25s ${i*.07}s ease both`; d.onclick=()=>openRecipe(key);
+d.innerHTML=`<div class="qthumb" style="background:${bgs[i%5]}">${r.emoji}</div> <div class="qinfo"><div class="qname">${isAr?r.nameAr:r.nameEn}</div> <div class="qmeta">${isAr?r.metaAr:r.metaEn}</div> <div class="qrow"><span class="qtag" style="background:${cm.light};color:${cm.color};">${isAr?cm.nameAr.replace(/ .*/,''):cm.nameEn.replace(/ .*/,'')}</span> <span style="font-size:18px;color:var(--border);">‹</span></div></div>`;
+l.appendChild(d);
+});
+}
+
+/* ══════ RECIPE DETAIL ══════ */
+function openRecipe(key){
+curRec=key; servings=4; selDrink=‘none’;
+const r=RECIPES[key];
+document.getElementById(‘det-hero’).style.background=r.heroBg;
+document.getElementById(‘det-emoji’).textContent=r.emoji;
+document.getElementById(‘det-badge’).textContent=isAr?r.badgeAr:r.badgeEn;
+document.getElementById(‘det-badge’).style.background=r.badgeColor;
+document.getElementById(‘det-name’).textContent=isAr?r.nameAr:r.nameEn;
+document.getElementById(‘det-meta’).innerHTML=(isAr?r.metaAr:r.metaEn).split(’·’).map(c=>`<span class="mchip">${c.trim()}</span>`).join(’’);
+document.getElementById(‘srv-lbl’).textContent=isAr?r.srvLblAr:r.srvLblEn;
+document.getElementById(‘srv-sub’).textContent=isAr?‘اضبط الكمية’:‘Adjust quantity’;
+document.getElementById(‘countDisplay’).textContent=fmtSrv(servings);
+document.getElementById(‘ing-ttl’).textContent=isAr?‘المكوّنات’:‘Ingredients’;
+document.getElementById(‘drinks-ttl’).textContent=isAr?‘أضف مشروبًا 🥤’:‘Add a drink 🥤’;
+document.getElementById(‘det-order-txt’).textContent=isAr?‘قارن وأطلب’:‘Compare & Order’;
+renderIngs(); renderDrinks(); goTo(3);
+}
+
+function renderIngs(){
+const r=RECIPES[curRec],l=document.getElementById(‘ing-list’); l.innerHTML=’’;
+r.ing.forEach((ing,i)=>{
+const val=Math.round(ing.base*servings*10)/10;
+const nm=isAr?ing.ar:ing.en;
+const amt=isAr?arN(val)+(ing.unitAr||’’):(val+(ing.unitEn||’’));
+const orig=ORIGINS[nm];
+const flagHtml=orig?`<span class="iflag">${orig[0]} ${isAr?orig[1]:orig[2]}</span>`:’’;
+const d=document.createElement(‘div’); d.className=‘irow’; d.onclick=()=>toggleIng(d);
+d.innerHTML=`<div class="ichk"></div><span class="iname">${nm}</span>${flagHtml}<span class="iamt" id="iq${i}">${amt}</span>`;
+l.appendChild(d);
+});
+}
+
+function renderDrinks(){
+const row=document.getElementById(‘drinks-row’); row.innerHTML=’’;
+DRINKS.forEach(d=>{
+const card=document.createElement(‘div’); card.className=‘drink-card’+(d.id===‘none’?’ sel’:’’);
+card.id=‘dk-’+d.id; card.onclick=()=>selectDrink(d.id);
+const pTxt=d.price===0?(isAr?‘مجاناً’:‘Free’):fmt(d.price);
+card.innerHTML=`<span class="drink-ico">${d.emoji}</span> <span class="drink-name">${isAr?d.ar:d.en}</span> <span class="drink-price">${pTxt}</span>`;
+row.appendChild(card);
+});
+}
+
+function selectDrink(id){
+selDrink=id;
+document.querySelectorAll(’.drink-card’).forEach(c=>c.classList.remove(‘sel’));
+const el=document.getElementById(‘dk-’+id); if(el) el.classList.add(‘sel’);
+}
+
+function changeCount(d){
+servings=Math.max(1,servings+d);
+document.getElementById(‘countDisplay’).textContent=fmtSrv(servings);
+const r=RECIPES[curRec];
+document.querySelectorAll(’#ing-list .iamt’).forEach((el,i)=>{
+const ing=r.ing[i];
+const val=Math.round(ing.base*servings*10)/10;
+el.textContent=isAr?arN(val)+(ing.unitAr||’’):(val+(ing.unitEn||’’));
+});
+}
+
+function toggleIng(el){
+const chk=el.querySelector(’.ichk’),nm=el.querySelector(’.iname’),was=chk.classList.contains(‘on’);
+chk.classList.toggle(‘on’,!was); chk.textContent=was?’’:‘✓’; nm.classList.toggle(‘x’,!was);
+}
+
+/* ══════ COMPARE CART ══════ */
+function selectStore(id){
+selStore=id;
+[‘danube’,‘altamimi’,‘carrefour’,‘panda’,‘lulu’].forEach(s=>{
+document.getElementById(s+’-card’).classList.toggle(‘sel’,s===id);
+document.getElementById(s+’-card’).classList.toggle(‘alt’,s!==id);
+});
+updateCart();
+}
+
+function updateCart(){
+const r=RECIPES[curRec],s=STORES[selStore],d=DRINKS.find(x=>x.id===selDrink)||DRINKS[0];
+const sub=r.priceBase*s.per*servings,dPrice=d.price*servings,total=sub+dPrice+s.del-5;
+document.getElementById(‘orderSum’).textContent=fmtSrv(servings);
+document.getElementById(‘cart-count’).textContent=isAr?arN(servings):servings;
+document.getElementById(‘ci-lbl’).innerHTML=`${r.emoji} × <span id="cart-count">${isAr?arN(servings):servings}</span>`;
+document.getElementById(‘cart-sub’).textContent=fmt(sub);
+const dcrow=document.getElementById(‘drink-crow’);
+if(d.id!==‘none’){dcrow.style.display=’’;document.getElementById(‘cart-drink-price’).textContent=fmt(dPrice);}
+else dcrow.style.display=‘none’;
+document.getElementById(‘cart-del’).textContent=isAr?arN(s.del)+’ ر.س’:’SAR ’+s.del;
+document.getElementById(‘cart-total’).textContent=fmt(total);
+document.getElementById(‘s4ttl’).textContent=isAr?‘قارن المتاجر 🛒’:‘Compare Stores 🛒’;
+document.getElementById(‘s4back’).textContent=isAr?‘العودة للوصفة’:‘Back to Recipe’;
+document.getElementById(‘s4sub’).textContent=isAr?’أفضل سعر لـ ’:‘Best price for ‘;
+document.getElementById(‘cttl’).textContent=isAr?‘🧾 ملخص الطلب’:‘🧾 Order Summary’;
+document.getElementById(‘cdel-lbl’).textContent=isAr?‘🛵 توصيل’:‘🛵 Delivery’;
+document.getElementById(‘cdisc-lbl’).textContent=isAr?‘💚 خصم’:‘💚 Discount’;
+document.getElementById(‘ctot-lbl’).textContent=isAr?‘الإجمالي’:‘Total’;
+document.getElementById(‘cd-lbl’).textContent=isAr?`🥤 ${d.ar}`:`🥤 ${d.en}`;
+const btnTxt=isAr?s.btnAr:s.btnEn;
+document.getElementById(‘btnTxt’).textContent=btnTxt+’ · ‘;
+document.getElementById(‘btnPrice’).textContent=fmt(total);
+[‘danube’,‘altamimi’,‘carrefour’,‘panda’,‘lulu’].forEach(id=>{
+const el=document.getElementById(id+’-price’); if(el){const st=STORES[id];el.textContent=fmt(r.priceBase*st.per*servings+(d.price>0?d.price*servings:0));}
+const pp=document.getElementById(‘pp-’+id); if(pp) pp.textContent=isAr?’/ ‘+arN(servings)+’ ‘+(r.unitAr||‘حصص’):’/ ‘+servings+’ ’+(r.unitEn||‘servings’)+‘s’;
+const sn=document.getElementById(‘sn-’+id); if(sn) sn.textContent=isAr?STORES[id].nameAr:STORES[id].nameEn;
+const sd=document.getElementById(‘sd-’+id); if(sd) sd.textContent=isAr?STORES[id].detAr:STORES[id].detEn;
+});
+document.getElementById(‘sbdg’).textContent=isAr?‘✓ الأفضل سعراً’:‘✓ Best Price’;
+}
+
+/* ══════ STORE ORDER DETAILS (screen 5) ══════ */
+function openStoreOrder(){
+const r=RECIPES[curRec],s=STORES[selStore],d=DRINKS.find(x=>x.id===selDrink)||DRINKS[0];
+const sub=r.priceBase*s.per*servings,dPrice=d.price*servings,total=sub+dPrice+s.del-5;
+
+// Store hero
+document.getElementById(‘s5-store-logo’).className=’store-hero-logo ’+s.logoClass;
+document.getElementById(‘s5-store-logo’).textContent=s.logo;
+document.getElementById(‘s5-store-name’).textContent=isAr?s.nameAr:s.nameEn;
+document.getElementById(‘s5-store-detail’).textContent=isAr?s.detAr:s.detEn;
+document.getElementById(‘s5-store-badge’).textContent=isAr?‘✓ متجرك المختار’:‘✓ Selected Store’;
+document.getElementById(‘s5back’).textContent=isAr?‘العودة للمقارنة’:‘Back to Compare’;
+document.getElementById(‘s5-items-ttl’).textContent=isAr?‘🛍️ تفاصيل طلبك’:‘🛍️ Your Order Details’;
+document.getElementById(‘s5-confirm-txt’).textContent=isAr?‘تأكيد الطلب’:‘Confirm Order’;
+
+// Build order items
+const list=document.getElementById(‘order-items-list’); list.innerHTML=’’;
+const card=document.createElement(‘div’); card.className=‘oi-card’;
+
+// Header row
+const recName=isAr?r.nameAr:r.nameEn;
+const recPrice=fmt(sub);
+let html=`<div class="oi-header">
+<span class="oi-emoji">${r.emoji}</span>
+<span class="oi-title">${recName}</span>
+<span class="oi-qty">${isAr?’× ’+arN(servings):’× ’+servings}</span>
+<span class="oi-total-price">${recPrice}</span>
+
+  </div><div class="oi-ing-list">`;
+
+// Ingredient rows with origin and price
+r.ing.forEach(ing=>{
+const nm=isAr?ing.ar:ing.en;
+const orig=ORIGINS[nm]||ORIGINS[isAr?ing.en:ing.ar];
+const flag=orig?orig[0]:‘🌍’;
+const country=orig?(isAr?orig[1]:orig[2]):(isAr?‘غير محدد’:‘Unknown’);
+const ingPrice=orig?orig[3]:0;
+const totalIngPrice=Math.round(ingPrice*ing.base*servings*10)/10;
+const amt=isAr?arN(Math.round(ing.base*servings*10)/10)+(ing.unitAr||’’):(Math.round(ing.base*servings*10)/10)+(ing.unitEn||’’);
+html+=`<div class="oi-ing-row"> <span class="oi-flag">${flag}</span> <div style="flex:1;"> <div class="oi-ing-name">${nm} <span style="font-size:10px;color:var(--text-muted);">(${amt})</span></div> <div class="oi-ing-origin">📍 ${country}</div> </div> <span class="oi-ing-price">${fmt(totalIngPrice)}</span> </div>`;
+});
+html+=’</div>’;
+
+// Drink row
+if(d.id!==‘none’){
+const dName=isAr?d.ar:d.en;
+html+=`<div class="drink-order-row"> <span class="drink-order-ico">${d.emoji}</span> <span class="drink-order-name">${dName} × ${isAr?arN(servings):servings}</span> <span class="drink-order-price">${fmt(dPrice)}</span> </div>`;
+}
+
+card.innerHTML=html;
+list.appendChild(card);
+
+// Final totals
+document.getElementById(‘ftttl’).textContent=isAr?‘🧾 الإجمالي النهائي’:‘🧾 Final Total’;
+document.getElementById(‘ft-sub-lbl’).textContent=isAr?‘المواد الغذائية’:‘Food items’;
+document.getElementById(‘ft-sub’).textContent=fmt(sub);
+const ftdr=document.getElementById(‘ft-drink-row’);
+if(d.id!==‘none’){ftdr.style.display=’’;document.getElementById(‘ft-drink-lbl’).textContent=isAr?‘المشروب’:‘Drink’;document.getElementById(‘ft-drink’).textContent=fmt(dPrice);}
+else ftdr.style.display=‘none’;
+document.getElementById(‘ft-del-lbl’).textContent=isAr?‘التوصيل’:‘Delivery’;
+document.getElementById(‘ft-del’).textContent=isAr?arN(s.del)+’ ر.س’:’SAR ’+s.del;
+document.getElementById(‘ft-disc-lbl’).textContent=isAr?‘خصم’:‘Discount’;
+document.getElementById(‘ft-tot-lbl’).textContent=isAr?‘الإجمالي’:‘Total’;
+document.getElementById(‘ft-tot’).textContent=fmt(total);
+
+goTo(5);
+}
+
+/* ══════ PLACE ORDER ══════ */
+function placeOrder(){
+const r=RECIPES[curRec],s=STORES[selStore],d=DRINKS.find(x=>x.id===selDrink)||DRINKS[0];
+const sub=r.priceBase*s.per*servings,dPrice=d.price*servings,total=sub+dPrice+s.del-5;
+document.getElementById(‘conf-emoji’).textContent=r.emoji;
+document.getElementById(‘cttl-txt’).textContent=isAr?‘تم الطلب! 🎉’:‘Order Placed! 🎉’;
+document.getElementById(‘csub1’).textContent=isAr?’طلبك لـ ’:’Your ‘;
+document.getElementById(‘conf-count’).textContent=fmtSrv(servings);
+document.getElementById(‘csub2’).textContent=isAr?’ في الطريق من ‘:’ on the way from ’;
+document.getElementById(‘conf-store’).textContent=isAr?s.nameAr:s.nameEn;
+document.getElementById(‘conf-tot’).textContent=fmt(total);
+document.getElementById(‘ordnum’).textContent=Math.floor(1000+Math.random()*9000);
+document.getElementById(‘trklbl’).textContent=isAr?‘حالة التوصيل’:‘Delivery Status’;
+document.getElementById(‘trk1’).textContent=isAr?‘مؤكَّد’:‘Confirmed’;
+document.getElementById(‘trk2’).textContent=isAr?‘يُحضَّر’:‘Preparing’;
+document.getElementById(‘trk3’).textContent=isAr?‘في الطريق’:‘On the way’;
+document.getElementById(‘trk4’).textContent=isAr?‘وصل’:‘Delivered’;
+document.getElementById(‘eta-tag’).textContent=isAr?`🕐 وقت التسليم: ${arN(STORES[selStore].del+15)} دقيقة`:`🕐 ETA: ${STORES[selStore].del+15} min`;
+document.getElementById(‘ord-pre’).textContent=isAr?‘رقم الطلب #RCP-’:‘Order #RCP-’;
+document.getElementById(‘homebtn-txt’).textContent=isAr?‘← العودة للرئيسية’:‘← Back to Home’;
+goTo(6);
+spawnConfetti();
+setTimeout(()=>{const f=document.getElementById(‘tfill’);if(f)f.style.width=‘33%’;},700);
+}
+
+/* ══════ CONFETTI ══════ */
+function spawnConfetti(){
+const c=document.getElementById(‘confettiEl’); c.innerHTML=’’;
+const cols=[’#4CAF78’,’#D94F3D’,’#F39C12’,’#9B59B6’,’#2196F3’,’#E91E63’];
+for(let i=0;i<50;i++){
+const s=document.createElement(‘span’);
+s.style.cssText=`left:${Math.random()*100}%;background:${cols[~~(Math.random()*cols.length)]}; animation-delay:${Math.random()*1.8}s;animation-duration:${1.8+Math.random()*1.5}s; width:${5+Math.random()*7}px;height:${5+Math.random()*7}px; border-radius:${Math.random()>.5?'50%':'2px'};`;
+c.appendChild(s);
+}
+}
+
+/* ══════ INIT ══════ */
+buildHomeRecs();
+</script>
+
+</body>
+</html>
